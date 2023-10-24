@@ -11,7 +11,16 @@ while true; do
   fi
 done
 
-# Commands for all nodes (master + workers)
+# Update and upgrade packages
+sudo yum -y update && sudo yum -y upgrade
+
+# Install Docker
+sudo yum install -y yum-utils
+sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+sudo yum install -y docker-ce docker-ce-cli containerd.io
+sudo systemctl enable --now docker
+
+# Common settings for all nodes (master + workers)
 sudo swapoff -a
 sudo sed -i '/ swap / s/^\(.*\)$/#/g' /etc/fstab
 sudo setenforce 0
@@ -53,7 +62,7 @@ sudo iptables-save > /etc/sysconfig/iptables
 echo "iptables-restore < /etc/sysconfig/iptables" | sudo tee -a /etc/rc.d/rc.local
 sudo chmod +x /etc/rc.d/rc.local
 
-# Install CRI-O (Automatically fetch the latest version)
+# Install CRI-O
 VERSION=$(curl -s https://api.github.com/repos/cri-o/cri-o/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' | cut -c 2-)
 sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/CentOS_8/devel:kubic:libcontainers:stable.repo
 sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:${VERSION}/CentOS_8/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo
@@ -73,4 +82,3 @@ exclude=kubelet kubeadm kubectl
 EOF
 sudo dnf install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 sudo systemctl enable --now kubelet
-
