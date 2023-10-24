@@ -21,17 +21,23 @@ sudo setenforce 0
 sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
 sudo iptables -A INPUT -p tcp --dport 4240 -j ACCEPT
 sudo iptables -A INPUT -p udp --dport 8472 -j ACCEPT
-sudo modprobe overlay
-sudo modprobe br_netfilter
+
 cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
 overlay
 br_netfilter
 EOF
+ 
+sudo modprobe overlay
+sudo modprobe br_netfilter
+ 
+# sysctl params required by setup, params persist across reboots
 cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
 net.bridge.bridge-nf-call-iptables  = 1
 net.bridge.bridge-nf-call-ip6tables = 1
 net.ipv4.ip_forward                 = 1
 EOF
+ 
+# Apply sysctl params without reboot
 sudo sysctl --system
 
 # Master node specific settings
@@ -60,6 +66,7 @@ sudo chmod +x /etc/rc.d/rc.local
 VERSION=$(curl -s https://api.github.com/repos/cri-o/cri-o/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' | cut -c 2-)
 sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/CentOS_8/devel:kubic:libcontainers:stable.repo
 sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:${VERSION}/CentOS_8/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo
+
 sudo dnf -y install cri-o cri-tools
 sudo systemctl enable --now crio
 
@@ -67,7 +74,7 @@ sudo systemctl enable --now crio
 cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
-baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-$basearch
 enabled=1
 gpgcheck=1
 repo_gpgcheck=1
