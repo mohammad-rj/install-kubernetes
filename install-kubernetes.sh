@@ -1,8 +1,15 @@
 #!/bin/bash
 
 # Prompt for master or worker node
-echo -n "Is this a master node? (y/n): "
-read isMaster
+while true; do
+  echo -n "Is this a master node? (y/n): "
+  read isMaster
+  if [[ "$isMaster" == "y" || "$isMaster" == "n" ]]; then
+    break
+  else
+    echo "Invalid input. Please enter 'y' for yes or 'n' for no."
+  fi
+done
 
 # Commands for all nodes (master + workers)
 sudo swapoff -a
