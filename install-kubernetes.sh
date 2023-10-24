@@ -8,9 +8,9 @@ sudo swapoff -a
 sudo sed -i '/ swap / s/^\(.*\)$/#/g' /etc/fstab
 sudo setenforce 0
 sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
-sudo firewall-cmd --permanent --add-port=4240/tcp
-sudo firewall-cmd --permanent --add-port=8472/udp
-sudo firewall-cmd --reload
+
+sudo iptables -A INPUT -p tcp --dport 4240 -j ACCEPT
+sudo iptables -A INPUT -p udp --dport 8472 -j ACCEPT
 
 cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
 overlay
@@ -30,7 +30,7 @@ sudo sysctl --system
 
 VERSION=1.22
 sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/CentOS_8/devel:kubic:libcontainers:stable.repo
-sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:${VERSION}/CentOS_8/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo
+sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:ALL:cri-o:${VERSION}.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:${VERSION}/CentOS_8/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo
 sudo dnf -y install cri-o cri-tools
 sudo systemctl enable --now crio
 
@@ -50,17 +50,15 @@ sudo systemctl enable --now kubelet
 
 # Master node specific commands
 if [ "$isMaster" = "y" ]; then
-  sudo firewall-cmd --permanent --add-port=6443/tcp
-  sudo firewall-cmd --permanent --add-port=2379-2380/tcp
-  sudo firewall-cmd --permanent --add-port=10250/tcp
-  sudo firewall-cmd --permanent --add-port=10259/tcp
-  sudo firewall-cmd --permanent --add-port=10257/tcp
-  sudo firewall-cmd --reload
+  sudo iptables -A INPUT -p tcp --dport 6443 -j ACCEPT
+  sudo iptables -A INPUT -p tcp --dport 2379:2380 -j ACCEPT
+  sudo iptables -A INPUT -p tcp --dport 10250 -j ACCEPT
+  sudo iptables -A INPUT -p tcp --dport 10259 -j ACCEPT
+  sudo iptables -A INPUT -p tcp --dport 10257 -j ACCEPT
 fi
 
 # Worker node specific commands
 if [ "$isMaster" = "n" ]; then
-  sudo firewall-cmd --permanent --add-port=10250/tcp
-  sudo firewall-cmd --permanent --add-port=30000-32767/tcp  
-  sudo firewall-cmd --reload
+  sudo iptables -A INPUT -p tcp --dport 10250 -j ACCEPT
+  sudo iptables -A INPUT -p tcp --dport 30000:32767 -j ACCEPT
 fi
