@@ -33,7 +33,6 @@ sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://d
 sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:${VERSION}/CentOS_8/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo
 sudo dnf -y install cri-o cri-tools
 sudo systemctl enable --now crio
-sudo systemctl status crio
 
 cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
