@@ -58,14 +58,15 @@ fi
 # Save iptables rules
 sudo iptables-save > /etc/sysconfig/iptables
 
-# Ensure the rules are restored at boot
+# Ensure the rules are restored at boot  
 echo "iptables-restore < /etc/sysconfig/iptables" | sudo tee -a /etc/rc.d/rc.local
 sudo chmod +x /etc/rc.d/rc.local
 
 # Install CRI-O
+OS=CentOS_9_Stream
 VERSION=$(curl -s https://api.github.com/repos/cri-o/cri-o/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' | cut -c 2-)
-sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/CentOS_8/devel:kubic:libcontainers:stable.repo
-sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:${VERSION}/CentOS_8/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo
+curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/download/repositories/devel:/kubic:/libcontainers:/stable/${OS}/devel:kubic:libcontainers:stable.repo
+curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:1.28.repo https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/${OS}/${VERSION}/devel:kubic:libcontainers:stable:cri-o:${VERSION}.repo
 
 sudo dnf -y install cri-o cri-tools
 sudo systemctl enable --now crio
