@@ -70,6 +70,7 @@ curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:${VERSION}.re
 
 sudo dnf -y install cri-o cri-tools
 sudo systemctl enable --now crio
+#sudo systemctl status crio
 
 # Install Kubernetes
 cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
@@ -84,3 +85,4 @@ exclude=kube*
 EOF
 sudo dnf install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 sudo systemctl enable --now kubelet
+#sudo systemctl status kubelet
